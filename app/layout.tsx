@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Zentrale – Early Beta",
-  description: "Zentrale – Dein zentraler Hub. Aktuell in der Early Beta.",
+  title: "ZENTRALE",
+  description:
+    "ZENTRALE – Das zentrale System zur Verwaltung und Steuerung aller Bereiche.",
 };
 
 export default function RootLayout({
