@@ -65,20 +65,26 @@ export async function register(formData: FormData) {
     { invite_code: inviteCode }
   );
 
-  if (codeError || !codeData || codeData.length === 0) {
+  if (codeError) {
+    console.error("Invite code validation error:", codeError);
+    return {
+      error: `Einladungscode konnte nicht geprüft werden: ${codeError.message}`,
+    };
+  }
+
+  if (!codeData || codeData.length === 0) {
     return { error: "Ungültiger oder bereits verwendeter Einladungscode." };
   }
 
   const { code_id, assigned_role } = codeData[0];
 
-  // 2. Check if username is already taken
-  const { data: existingProfile } = await supabase
+  // 2. Check if username is already taken (use RPC to bypass RLS for anon)
+  const { count } = await supabase
     .from("profiles")
-    .select("id")
-    .eq("username", username)
-    .maybeSingle();
+    .select("*", { count: "exact", head: true })
+    .eq("username", username);
 
-  if (existingProfile) {
+  if (count && count > 0) {
     return { error: "Dieser Benutzername ist bereits vergeben." };
   }
 
@@ -96,8 +102,13 @@ export async function register(formData: FormData) {
     },
   });
 
-  if (signUpError || !authData.user) {
-    return { error: "Registrierung fehlgeschlagen. Bitte versuche es erneut." };
+  if (signUpError) {
+    console.error("SignUp error:", signUpError);
+    return { error: `Registrierung fehlgeschlagen: ${signUpError.message}` };
+  }
+
+  if (!authData.user) {
+    return { error: "Registrierung fehlgeschlagen. Kein Benutzer erstellt." };
   }
 
   // 4. Create profile
@@ -108,14 +119,40 @@ export async function register(formData: FormData) {
   });
 
   if (profileError) {
-    return { error: "Profil konnte nicht erstellt werden." };
+    console.error("Profile creation error:", profileError);
+    return {
+      error: `Profil konnte nicht erstellt werden: ${profileError.message}`,
+    };
   }
 
   // 5. Consume invite code
-  await supabase.rpc("consume_invite_code", {
+  const { error: consumeError } = await supabase.rpc("consume_invite_code", {
     code_id,
     user_id: authData.user.id,
   });
+
+  if (consumeError) {
+    console.error("Consume invite code error:", consumeError);
+  }
+
+  // 6. If signUp didn't establish a session (e.g. email confirmation enabled),
+  //    sign in explicitly to create the session
+  if (!authData.session) {
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: internalEmail,
+      password,
+    });
+
+    if (signInError) {
+      console.error("Auto sign-in error:", signInError);
+      return {
+        error:
+          "Konto wurde erstellt, aber automatische Anmeldung fehlgeschlagen. " +
+          "Bitte melde dich manuell an. " +
+          "(Tipp: In Supabase Auth Settings 'Confirm email' deaktivieren.)",
+      };
+    }
+  }
 
   redirect("/dashboard");
 }
