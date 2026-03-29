@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { LogoutButton } from "./logout-button";
 
 export default async function DashboardPage() {
@@ -54,12 +55,12 @@ export default async function DashboardPage() {
         </div>
 
         <div className="module-grid">
-          <div className="module-card module-card-placeholder">
+          <Link href="/hochbeete" className="module-card module-card-active">
             <div className="module-icon">🌱</div>
-            <h3>Beete</h3>
-            <p>Gartenbeete verwalten und überwachen.</p>
-            <span className="module-status">Demnächst</span>
-          </div>
+            <h3>Hochbeete</h3>
+            <p>Hochbeete verwalten und überwachen.</p>
+            <span className="module-status module-status-active">Verfügbar</span>
+          </Link>
           <div className="module-card module-card-placeholder">
             <div className="module-icon">📊</div>
             <h3>Dashboard</h3>
