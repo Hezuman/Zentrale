@@ -1,8 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
-import { redirect, notFound } from "next/navigation";
-import Link from "next/link";
+import { notFound } from "next/navigation";
 import { getRaisedBed, getZonesForBed } from "@/app/actions/zones";
 import { BedEditor } from "./bed-editor";
+import { AppHeader } from "@/app/components/header";
+import { Breadcrumb } from "@/app/components/breadcrumb";
 
 export default async function HochbeetDetailPage({
   params,
@@ -15,19 +16,17 @@ export default async function HochbeetDetailPage({
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect("/");
+  let profile: { username: string; role: string } | null = null;
+  if (user) {
+    const { data } = await supabase
+      .from("profiles")
+      .select("username, role")
+      .eq("id", user.id)
+      .single();
+    profile = data;
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("username, role")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile) {
-    redirect("/");
-  }
+  const isGuest = !user;
 
   const { data: bed } = await getRaisedBed(params.id);
 
@@ -37,36 +36,27 @@ export default async function HochbeetDetailPage({
 
   const { data: zones } = await getZonesForBed(params.id);
 
-  const roleLabels: Record<string, string> = {
-    admin: "Administrator",
-    family: "Familie",
-    friends: "Freunde",
-  };
-
-  const isAdmin = profile.role === "admin";
-  const canEdit = ["admin", "family", "friends"].includes(profile.role);
+  const isAdmin = profile?.role === "admin";
+  const canEdit = !isGuest && ["admin", "family", "close_friends", "friends"].includes(profile?.role || "");
 
   return (
     <main className="dashboard">
-      <header className="dashboard-header">
-        <div className="dashboard-header-left">
-          <Link href="/dashboard" className="dashboard-logo">
-            ZENTRALE
-          </Link>
-        </div>
-        <div className="dashboard-header-right">
-          <span className="dashboard-user">{profile.username}</span>
-          <span className={`role-badge role-${profile.role}`}>
-            {roleLabels[profile.role] || profile.role}
-          </span>
-        </div>
-      </header>
+      <AppHeader
+        username={profile?.username}
+        role={profile?.role}
+        isGuest={isGuest}
+      />
 
       <div className="dashboard-content">
+        <Breadcrumb
+          items={[
+            { label: "Hochbeete", href: "/hochbeete" },
+            { label: bed.name, href: `/hochbeete/${bed.id}` },
+          ]}
+          isGuest={isGuest}
+        />
+
         <div>
-          <Link href="/hochbeete" className="auth-back">
-            ← Zurück zu Hochbeete
-          </Link>
           <h2 className="hochbeete-title">{bed.name}</h2>
           <p className="hochbeete-subtitle">
             {bed.width_cm} × {bed.height_cm} cm

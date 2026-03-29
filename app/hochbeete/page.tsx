@@ -1,8 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getRaisedBeds } from "@/app/actions/hochbeete";
 import { CreateHochbeetForm } from "./create-hochbeet-form";
+import { AppHeader } from "@/app/components/header";
+import { Breadcrumb } from "@/app/components/breadcrumb";
 
 export default async function HochbeetePage() {
   const supabase = createClient();
@@ -11,51 +12,36 @@ export default async function HochbeetePage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect("/");
+  let profile: { username: string; role: string } | null = null;
+  if (user) {
+    const { data } = await supabase
+      .from("profiles")
+      .select("username, role")
+      .eq("id", user.id)
+      .single();
+    profile = data;
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("username, role")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile) {
-    redirect("/");
-  }
-
-  const isAdmin = profile.role === "admin";
+  const isGuest = !user;
+  const isAdmin = profile?.role === "admin";
   const { data: beds } = await getRaisedBeds();
-
-  const roleLabels: Record<string, string> = {
-    admin: "Administrator",
-    family: "Familie",
-    friends: "Freunde",
-  };
 
   return (
     <main className="dashboard">
-      <header className="dashboard-header">
-        <div className="dashboard-header-left">
-          <Link href="/dashboard" className="dashboard-logo">
-            ZENTRALE
-          </Link>
-        </div>
-        <div className="dashboard-header-right">
-          <span className="dashboard-user">{profile.username}</span>
-          <span className={`role-badge role-${profile.role}`}>
-            {roleLabels[profile.role] || profile.role}
-          </span>
-        </div>
-      </header>
+      <AppHeader
+        username={profile?.username}
+        role={profile?.role}
+        isGuest={isGuest}
+      />
 
       <div className="dashboard-content">
+        <Breadcrumb
+          items={[{ label: "Hochbeete", href: "/hochbeete" }]}
+          isGuest={isGuest}
+        />
+
         <div className="hochbeete-header">
           <div>
-            <Link href="/dashboard" className="auth-back">
-              ← Zurück zur Übersicht
-            </Link>
             <h2 className="hochbeete-title">Hochbeete</h2>
             <p className="hochbeete-subtitle">
               Übersicht aller aktiven Hochbeete.

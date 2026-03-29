@@ -64,7 +64,7 @@ export async function createZone(params: {
     .eq("id", user.id)
     .single();
 
-  if (!profile || !["admin", "family", "friends"].includes(profile.role)) {
+  if (!profile || !["admin", "family", "close_friends", "friends"].includes(profile.role)) {
     return { error: "Keine Berechtigung." };
   }
 
@@ -129,7 +129,7 @@ export async function updateZone(params: {
     .eq("id", user.id)
     .single();
 
-  if (!profile || !["admin", "family", "friends"].includes(profile.role)) {
+  if (!profile || !["admin", "family", "close_friends", "friends"].includes(profile.role)) {
     return { error: "Keine Berechtigung." };
   }
 

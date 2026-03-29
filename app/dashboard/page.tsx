@@ -1,7 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { LogoutButton } from "./logout-button";
+import { AppHeader } from "@/app/components/header";
+import { ROLE_LABELS, canAccessSpiele, canAccessSettings, canAccessAdmin } from "@/lib/roles";
 
 export default async function DashboardPage() {
   const supabase = createClient();
@@ -24,55 +25,48 @@ export default async function DashboardPage() {
     redirect("/");
   }
 
-  const roleLabels: Record<string, string> = {
-    admin: "Administrator",
-    family: "Familie",
-    friends: "Freunde",
-  };
-
   return (
     <main className="dashboard">
-      <header className="dashboard-header">
-        <div className="dashboard-header-left">
-          <h1 className="dashboard-logo">ZENTRALE</h1>
-        </div>
-        <div className="dashboard-header-right">
-          <span className="dashboard-user">{profile.username}</span>
-          <span className={`role-badge role-${profile.role}`}>
-            {roleLabels[profile.role] || profile.role}
-          </span>
-          <LogoutButton />
-        </div>
-      </header>
+      <AppHeader username={profile.username} role={profile.role} />
 
       <div className="dashboard-content">
         <div className="dashboard-welcome">
           <h2>Willkommen, {profile.username}</h2>
           <p>
-            Du bist als <strong>{roleLabels[profile.role]}</strong> angemeldet.
-            Die Zentrale wird Schritt für Schritt um neue Module erweitert.
+            Du bist als <strong>{ROLE_LABELS[profile.role] || profile.role}</strong> angemeldet.
           </p>
         </div>
 
-        <div className="module-grid">
-          <Link href="/hochbeete" className="module-card module-card-active">
-            <div className="module-icon">🌱</div>
+        <div className="dashboard-tiles">
+          <Link href="/hochbeete" className="dashboard-tile" data-accent="hochbeete">
+            <div className="dashboard-tile-icon">🌱</div>
             <h3>Hochbeete</h3>
             <p>Hochbeete verwalten und überwachen.</p>
-            <span className="module-status module-status-active">Verfügbar</span>
           </Link>
-          <div className="module-card module-card-placeholder">
-            <div className="module-icon">📊</div>
-            <h3>Dashboard</h3>
-            <p>Übersicht über alle Systeme.</p>
-            <span className="module-status">Demnächst</span>
-          </div>
-          <div className="module-card module-card-placeholder">
-            <div className="module-icon">⚙️</div>
-            <h3>Systeme</h3>
-            <p>Technische Systeme steuern.</p>
-            <span className="module-status">Demnächst</span>
-          </div>
+
+          {canAccessSpiele(profile.role) && (
+            <Link href="/spiele" className="dashboard-tile" data-accent="spiele">
+              <div className="dashboard-tile-icon">🎮</div>
+              <h3>Spiele</h3>
+              <p>Spiele und Unterhaltung.</p>
+            </Link>
+          )}
+
+          {canAccessSettings(profile.role) && (
+            <Link href="/settings" className="dashboard-tile" data-accent="settings">
+              <div className="dashboard-tile-icon">⚙️</div>
+              <h3>Einstellungen</h3>
+              <p>Konto und Einstellungen.</p>
+            </Link>
+          )}
+
+          {canAccessAdmin(profile.role) && (
+            <Link href="/admin" className="dashboard-tile" data-accent="admin">
+              <div className="dashboard-tile-icon">🛡️</div>
+              <h3>Admin</h3>
+              <p>Verwaltungsbereich.</p>
+            </Link>
+          )}
         </div>
       </div>
     </main>

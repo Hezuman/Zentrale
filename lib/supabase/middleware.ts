@@ -30,7 +30,8 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // Protected routes: redirect unauthenticated users to landing
-  const protectedPaths = ["/dashboard", "/hochbeete"];
+  // Note: /hochbeete is NOT protected (guest access allowed)
+  const protectedPaths = ["/dashboard", "/spiele", "/settings", "/admin"];
   const isProtected = protectedPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
   );
@@ -41,8 +42,8 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Redirect authenticated users away from auth pages
-  const authPaths = ["/login", "/register"];
+  // Redirect authenticated users away from auth pages and guest page
+  const authPaths = ["/login", "/register", "/guest"];
   const isAuthPage = authPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
   );
