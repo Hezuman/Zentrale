@@ -38,7 +38,7 @@ export async function getGameSessions(filter?: {
   let query = supabase
     .from("game_sessions")
     .select(
-      `*, game_type:game_types(*), creator_profile:profiles!game_sessions_created_by_fkey(username, role), participants:session_participants(id, user_id, role, score, score_multiplier, is_active, joined_at, profile:profiles(username, role))`
+      `*, game_type:game_types(*), participants:session_participants(id, user_id, role, score, score_multiplier, is_active, joined_at, profile:profiles(username, role))`
     )
     .order("created_at", { ascending: false });
 
@@ -56,6 +56,23 @@ export async function getGameSessions(filter?: {
     return { data: null, error: error.message };
   }
 
+  // Attach creator profiles
+  if (data) {
+    const creatorIds = Array.from(new Set(data.map((s: any) => s.created_by)));
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, username, role")
+      .in("id", creatorIds);
+
+    const profileMap = new Map(
+      (profiles || []).map((p: any) => [p.id, { username: p.username, role: p.role }])
+    );
+
+    for (const session of data as any[]) {
+      session.creator_profile = profileMap.get(session.created_by) || null;
+    }
+  }
+
   return { data, error: null };
 }
 
@@ -65,7 +82,7 @@ export async function getGameSession(id: string) {
   const { data, error } = await supabase
     .from("game_sessions")
     .select(
-      `*, game_type:game_types(*), creator_profile:profiles!game_sessions_created_by_fkey(username, role), participants:session_participants(id, user_id, role, score, score_multiplier, is_active, joined_at, profile:profiles(username, role))`
+      `*, game_type:game_types(*), participants:session_participants(id, user_id, role, score, score_multiplier, is_active, joined_at, profile:profiles(username, role))`
     )
     .eq("id", id)
     .single();
@@ -73,6 +90,17 @@ export async function getGameSession(id: string) {
   if (error) {
     console.error("Error fetching game session:", error);
     return { data: null, error: error.message };
+  }
+
+  // Attach creator profile separately to avoid FK hint issues
+  if (data) {
+    const { data: creatorProfile } = await supabase
+      .from("profiles")
+      .select("username, role")
+      .eq("id", (data as any).created_by)
+      .single();
+
+    (data as any).creator_profile = creatorProfile || null;
   }
 
   return { data, error: null };
