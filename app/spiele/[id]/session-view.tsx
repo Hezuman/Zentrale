@@ -15,6 +15,7 @@ import {
   SESSION_STATUS_COLORS,
 } from "@/lib/gaming-types";
 import type { GameSessionStatus } from "@/lib/gaming-types";
+import { BuzzerPanel } from "./buzzer-panel";
 
 export function SessionView({
   session,
@@ -212,6 +213,17 @@ export function SessionView({
           </button>
         )}
       </div>
+
+      {/* Buzzer Panel (only for buzzer game type) */}
+      {gameType?.slug === "buzzer" && (
+        <BuzzerPanel
+          sessionId={session.id}
+          currentUserId={currentUserId}
+          isHost={canManage}
+          isRunning={status === "running"}
+          participants={participants}
+        />
+      )}
 
       {/* Participants / Scoreboard */}
       <div className="session-participants">
