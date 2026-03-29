@@ -63,6 +63,17 @@ export function BedEditor({
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
+  // Refs to avoid stale closures in event handlers
+  const drawStartRef = useRef(drawStart);
+  const drawCurrentRef = useRef(drawCurrent);
+  const drawingRef = useRef(drawing);
+  const zonesRef = useRef(zones);
+
+  drawStartRef.current = drawStart;
+  drawCurrentRef.current = drawCurrent;
+  drawingRef.current = drawing;
+  zonesRef.current = zones;
+
   // Scale: map bed cm to pixels. Max width 800px, maintain aspect ratio.
   const maxPx = 800;
   const scale = Math.min(maxPx / bed.width_cm, maxPx / bed.height_cm, 4);
@@ -74,13 +85,13 @@ export function BedEditor({
     [scale]
   );
 
-  const getRelativePos = useCallback(
-    (e: React.MouseEvent) => {
+  const getPointerPos = useCallback(
+    (clientX: number, clientY: number) => {
       if (!containerRef.current) return { x: 0, y: 0 };
       const rect = containerRef.current.getBoundingClientRect();
       return {
-        x: Math.max(0, Math.min(e.clientX - rect.left, bedWidthPx)),
-        y: Math.max(0, Math.min(e.clientY - rect.top, bedHeightPx)),
+        x: Math.max(0, Math.min(clientX - rect.left, bedWidthPx)),
+        y: Math.max(0, Math.min(clientY - rect.top, bedHeightPx)),
       };
     },
     [bedWidthPx, bedHeightPx]
@@ -92,9 +103,10 @@ export function BedEditor({
     y: number,
     w: number,
     h: number,
+    currentZones: Zone[],
     excludeId?: string
   ) {
-    return zones.some(
+    return currentZones.some(
       (z) =>
         z.id !== excludeId &&
         x < z.x_cm + z.width_cm &&
@@ -109,53 +121,70 @@ export function BedEditor({
     return x >= 0 && y >= 0 && x + w <= bed.width_cm && y + h <= bed.height_cm;
   }
 
-  // Drawing rect in cm from drawStart/drawCurrent
-  function getDrawRectCm() {
-    if (!drawStart || !drawCurrent) return null;
-    const x1 = pxToCm(Math.min(drawStart.x, drawCurrent.x));
-    const y1 = pxToCm(Math.min(drawStart.y, drawCurrent.y));
-    const x2 = pxToCm(Math.max(drawStart.x, drawCurrent.x));
-    const y2 = pxToCm(Math.max(drawStart.y, drawCurrent.y));
+  // Drawing rect in cm from start/current positions
+  function computeRectCm(
+    start: { x: number; y: number },
+    current: { x: number; y: number }
+  ) {
+    const x1 = pxToCm(Math.min(start.x, current.x));
+    const y1 = pxToCm(Math.min(start.y, current.y));
+    const x2 = pxToCm(Math.max(start.x, current.x));
+    const y2 = pxToCm(Math.max(start.y, current.y));
     const w = Math.max(1, x2 - x1);
     const h = Math.max(1, y2 - y1);
     return { x: x1, y: y1, w, h };
   }
 
+  // For rendering the preview
+  function getDrawRectCm() {
+    if (!drawStart || !drawCurrent) return null;
+    return computeRectCm(drawStart, drawCurrent);
+  }
+
   function getDrawValid() {
     const r = getDrawRectCm();
     if (!r) return false;
-    return checkBounds(r.x, r.y, r.w, r.h) && !checkOverlap(r.x, r.y, r.w, r.h);
+    return checkBounds(r.x, r.y, r.w, r.h) && !checkOverlap(r.x, r.y, r.w, r.h, zones);
   }
 
-  const handleMouseDown = useCallback(
-    (e: React.MouseEvent) => {
-      if (!drawMode || !canEdit) return;
-      e.preventDefault();
+  // --- Pointer start (mouse + touch) ---
+  const handlePointerStart = useCallback(
+    (clientX: number, clientY: number) => {
       setSelectedZone(null);
       setError(null);
-      const pos = getRelativePos(e);
+      const pos = getPointerPos(clientX, clientY);
       setDrawStart(pos);
       setDrawCurrent(pos);
       setDrawing(true);
     },
-    [drawMode, canEdit, getRelativePos]
+    [getPointerPos]
   );
 
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent) => {
-      if (!drawing) return;
-      e.preventDefault();
-      setDrawCurrent(getRelativePos(e));
+  // --- Pointer move ---
+  const handlePointerMove = useCallback(
+    (clientX: number, clientY: number) => {
+      if (!drawingRef.current) return;
+      setDrawCurrent(getPointerPos(clientX, clientY));
     },
-    [drawing, getRelativePos]
+    [getPointerPos]
   );
 
-  const handleMouseUp = useCallback(async () => {
-    if (!drawing) return;
+  // --- Pointer end (save zone) ---
+  const handlePointerEnd = useCallback(async () => {
+    if (!drawingRef.current) return;
     setDrawing(false);
 
-    const rect = getDrawRectCm();
-    if (!rect || rect.w < 5 || rect.h < 5) {
+    const start = drawStartRef.current;
+    const current = drawCurrentRef.current;
+
+    if (!start || !current) {
+      setDrawStart(null);
+      setDrawCurrent(null);
+      return;
+    }
+
+    const rect = computeRectCm(start, current);
+    if (rect.w < 5 || rect.h < 5) {
       setDrawStart(null);
       setDrawCurrent(null);
       return;
@@ -168,7 +197,7 @@ export function BedEditor({
       return;
     }
 
-    if (checkOverlap(rect.x, rect.y, rect.w, rect.h)) {
+    if (checkOverlap(rect.x, rect.y, rect.w, rect.h, zonesRef.current)) {
       setError("Zone überlappt mit einer bestehenden Zone.");
       setDrawStart(null);
       setDrawCurrent(null);
@@ -196,7 +225,67 @@ export function BedEditor({
     setSaving(false);
     setDrawStart(null);
     setDrawCurrent(null);
-  }, [drawing, bed.id, zones, pxToCm, router]);
+  }, [bed.id, pxToCm, router]);
+
+  // --- Mouse event handlers ---
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if (!drawMode || !canEdit) return;
+      e.preventDefault();
+      handlePointerStart(e.clientX, e.clientY);
+    },
+    [drawMode, canEdit, handlePointerStart]
+  );
+
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!drawingRef.current) return;
+      e.preventDefault();
+      handlePointerMove(e.clientX, e.clientY);
+    },
+    [handlePointerMove]
+  );
+
+  const handleMouseUp = useCallback(() => {
+    handlePointerEnd();
+  }, [handlePointerEnd]);
+
+  // --- Touch event handlers ---
+  const handleTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      if (!drawMode || !canEdit) return;
+      e.preventDefault();
+      const touch = e.touches[0];
+      handlePointerStart(touch.clientX, touch.clientY);
+    },
+    [drawMode, canEdit, handlePointerStart]
+  );
+
+  const handleTouchMove = useCallback(
+    (e: React.TouchEvent) => {
+      if (!drawingRef.current) return;
+      e.preventDefault();
+      const touch = e.touches[0];
+      handlePointerMove(touch.clientX, touch.clientY);
+    },
+    [handlePointerMove]
+  );
+
+  const handleTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      e.preventDefault();
+      handlePointerEnd();
+    },
+    [handlePointerEnd]
+  );
+
+  const handleCancel = useCallback(() => {
+    if (drawingRef.current) {
+      setDrawing(false);
+      setDrawStart(null);
+      setDrawCurrent(null);
+    }
+  }, []);
 
   // Sync zones when server updates
   useEffect(() => {
@@ -268,17 +357,15 @@ export function BedEditor({
         <div
           ref={containerRef}
           className={`bed-editor-canvas ${drawMode ? "bed-editor-canvas-draw" : ""}`}
-          style={{ width: bedWidthPx, height: bedHeightPx }}
+          style={{ width: bedWidthPx, height: bedHeightPx, touchAction: drawMode ? "none" : "auto" }}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
-          onMouseLeave={() => {
-            if (drawing) {
-              setDrawing(false);
-              setDrawStart(null);
-              setDrawCurrent(null);
-            }
-          }}
+          onMouseLeave={handleCancel}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onTouchCancel={handleCancel}
         >
           {/* Grid lines */}
           <BedGrid widthCm={bed.width_cm} heightCm={bed.height_cm} scale={scale} />
