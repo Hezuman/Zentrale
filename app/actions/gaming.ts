@@ -38,7 +38,7 @@ export async function getGameSessions(filter?: {
   let query = supabase
     .from("game_sessions")
     .select(
-      `*, game_type:game_types(*), participants:session_participants(id, user_id, role, score, score_multiplier, is_active, joined_at, profile:profiles(username, role))`
+      `*, game_type:game_types(*), participants:session_participants(id, user_id, role, score, score_multiplier, is_active, joined_at)`
     )
     .order("created_at", { ascending: false });
 
@@ -56,13 +56,20 @@ export async function getGameSessions(filter?: {
     return { data: null, error: error.message };
   }
 
-  // Attach creator profiles
-  if (data) {
-    const creatorIds = Array.from(new Set(data.map((s: any) => s.created_by)));
+  // Attach profiles for creators and participants
+  if (data && data.length > 0) {
+    const allUserIds = new Set<string>();
+    for (const s of data as any[]) {
+      allUserIds.add(s.created_by);
+      for (const p of s.participants || []) {
+        allUserIds.add(p.user_id);
+      }
+    }
+
     const { data: profiles } = await supabase
       .from("profiles")
       .select("id, username, role")
-      .in("id", creatorIds);
+      .in("id", Array.from(allUserIds));
 
     const profileMap = new Map(
       (profiles || []).map((p: any) => [p.id, { username: p.username, role: p.role }])
@@ -70,6 +77,9 @@ export async function getGameSessions(filter?: {
 
     for (const session of data as any[]) {
       session.creator_profile = profileMap.get(session.created_by) || null;
+      for (const p of session.participants || []) {
+        p.profile = profileMap.get(p.user_id) || null;
+      }
     }
   }
 
@@ -82,7 +92,7 @@ export async function getGameSession(id: string) {
   const { data, error } = await supabase
     .from("game_sessions")
     .select(
-      `*, game_type:game_types(*), participants:session_participants(id, user_id, role, score, score_multiplier, is_active, joined_at, profile:profiles(username, role))`
+      `*, game_type:game_types(*), participants:session_participants(id, user_id, role, score, score_multiplier, is_active, joined_at)`
     )
     .eq("id", id)
     .single();
@@ -92,15 +102,27 @@ export async function getGameSession(id: string) {
     return { data: null, error: error.message };
   }
 
-  // Attach creator profile separately to avoid FK hint issues
+  // Attach profiles separately (avoids indirect FK join through auth.users)
   if (data) {
-    const { data: creatorProfile } = await supabase
-      .from("profiles")
-      .select("username, role")
-      .eq("id", (data as any).created_by)
-      .single();
+    const userIds = new Set<string>();
+    userIds.add((data as any).created_by);
+    for (const p of (data as any).participants || []) {
+      userIds.add(p.user_id);
+    }
 
-    (data as any).creator_profile = creatorProfile || null;
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, username, role")
+      .in("id", Array.from(userIds));
+
+    const profileMap = new Map(
+      (profiles || []).map((p: any) => [p.id, { username: p.username, role: p.role }])
+    );
+
+    (data as any).creator_profile = profileMap.get((data as any).created_by) || null;
+    for (const p of (data as any).participants || []) {
+      p.profile = profileMap.get(p.user_id) || null;
+    }
   }
 
   return { data, error: null };
