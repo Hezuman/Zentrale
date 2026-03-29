@@ -54,6 +54,7 @@ export function BedEditor({
 }) {
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const [zones, setZones] = useState<Zone[]>(initialZones);
   const [selectedZone, setSelectedZone] = useState<Zone | null>(null);
   const [drawing, setDrawing] = useState(false);
@@ -62,6 +63,8 @@ export function BedEditor({
   const [drawMode, setDrawMode] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [zoom, setZoom] = useState(1);
+  const [containerWidth, setContainerWidth] = useState(0);
 
   // Refs to avoid stale closures in event handlers
   const drawStartRef = useRef(drawStart);
@@ -74,9 +77,23 @@ export function BedEditor({
   drawingRef.current = drawing;
   zonesRef.current = zones;
 
-  // Scale: map bed cm to pixels. Max width 800px, maintain aspect ratio.
-  const maxPx = 800;
-  const scale = Math.min(maxPx / bed.width_cm, maxPx / bed.height_cm, 4);
+  // Measure available width for responsive canvas sizing
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
+    const obs = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setContainerWidth(entry.contentRect.width);
+      }
+    });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  // Scale: responsive to container width on mobile, max 800px on desktop
+  const maxPx = containerWidth > 0 ? Math.min(800, containerWidth) : 800;
+  const baseScale = Math.min(maxPx / bed.width_cm, maxPx / bed.height_cm, 4);
+  const scale = baseScale * zoom;
   const bedWidthPx = bed.width_cm * scale;
   const bedHeightPx = bed.height_cm * scale;
 
@@ -250,10 +267,11 @@ export function BedEditor({
     handlePointerEnd();
   }, [handlePointerEnd]);
 
-  // --- Touch event handlers ---
+  // --- Touch event handlers (single-finger only for drawing) ---
   const handleTouchStart = useCallback(
     (e: React.TouchEvent) => {
       if (!drawMode || !canEdit) return;
+      if (e.touches.length !== 1) return; // Only single-finger for drawing
       e.preventDefault();
       const touch = e.touches[0];
       handlePointerStart(touch.clientX, touch.clientY);
@@ -264,6 +282,13 @@ export function BedEditor({
   const handleTouchMove = useCallback(
     (e: React.TouchEvent) => {
       if (!drawingRef.current) return;
+      // Cancel drawing if multi-touch detected (e.g. pinch gesture)
+      if (e.touches.length !== 1) {
+        setDrawing(false);
+        setDrawStart(null);
+        setDrawCurrent(null);
+        return;
+      }
       e.preventDefault();
       const touch = e.touches[0];
       handlePointerMove(touch.clientX, touch.clientY);
@@ -273,8 +298,10 @@ export function BedEditor({
 
   const handleTouchEnd = useCallback(
     (e: React.TouchEvent) => {
-      e.preventDefault();
-      handlePointerEnd();
+      if (drawingRef.current) {
+        e.preventDefault();
+        handlePointerEnd();
+      }
     },
     [handlePointerEnd]
   );
@@ -285,6 +312,50 @@ export function BedEditor({
       setDrawStart(null);
       setDrawCurrent(null);
     }
+  }, []);
+
+  // Pinch-to-zoom on the canvas wrapper (non-draw mode)
+  useEffect(() => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
+
+    let lastDistance = 0;
+
+    function getDistance(t1: Touch, t2: Touch) {
+      return Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+    }
+
+    function onTouchStart(e: TouchEvent) {
+      if (e.touches.length === 2) {
+        lastDistance = getDistance(e.touches[0], e.touches[1]);
+      }
+    }
+
+    function onTouchMove(e: TouchEvent) {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        const dist = getDistance(e.touches[0], e.touches[1]);
+        if (lastDistance > 0) {
+          const ratio = dist / lastDistance;
+          setZoom((prev) => Math.min(3, Math.max(0.5, prev * ratio)));
+        }
+        lastDistance = dist;
+      }
+    }
+
+    function onTouchEnd() {
+      lastDistance = 0;
+    }
+
+    wrapper.addEventListener("touchstart", onTouchStart, { passive: true });
+    wrapper.addEventListener("touchmove", onTouchMove, { passive: false });
+    wrapper.addEventListener("touchend", onTouchEnd);
+
+    return () => {
+      wrapper.removeEventListener("touchstart", onTouchStart);
+      wrapper.removeEventListener("touchmove", onTouchMove);
+      wrapper.removeEventListener("touchend", onTouchEnd);
+    };
   }, []);
 
   // Sync zones when server updates
@@ -353,11 +424,45 @@ export function BedEditor({
 
       {error && <div className="form-error">{error}</div>}
 
-      <div className="bed-editor-canvas-wrapper">
+      {/* Zoom controls – visible on mobile, useful on desktop too */}
+      <div className="bed-editor-zoom-controls">
+        <button
+          className="btn btn-ghost btn-sm"
+          onClick={() => setZoom((z) => Math.max(0.5, +(z - 0.25).toFixed(2)))}
+          disabled={zoom <= 0.5}
+          aria-label="Verkleinern"
+        >
+          −
+        </button>
+        <span className="bed-editor-zoom-label">{Math.round(zoom * 100)}%</span>
+        <button
+          className="btn btn-ghost btn-sm"
+          onClick={() => setZoom((z) => Math.min(3, +(z + 0.25).toFixed(2)))}
+          disabled={zoom >= 3}
+          aria-label="Vergrößern"
+        >
+          +
+        </button>
+        {zoom !== 1 && (
+          <button
+            className="btn btn-ghost btn-sm"
+            onClick={() => setZoom(1)}
+          >
+            Reset
+          </button>
+        )}
+      </div>
+
+      <div className="bed-editor-canvas-wrapper" ref={wrapperRef}>
         <div
           ref={containerRef}
           className={`bed-editor-canvas ${drawMode ? "bed-editor-canvas-draw" : ""}`}
-          style={{ width: bedWidthPx, height: bedHeightPx, touchAction: drawMode ? "none" : "auto" }}
+          style={{
+            width: bedWidthPx,
+            height: bedHeightPx,
+            /* pan-x pan-y allows native scroll but reserves pinch for JS handler */
+            touchAction: drawMode ? "none" : "pan-x pan-y",
+          }}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
@@ -426,18 +531,29 @@ export function BedEditor({
         </div>
       </div>
 
-      {/* Zone detail panel */}
-      {selectedZone && !drawMode && (
-        <ZonePanel
-          zone={selectedZone}
-          isAdmin={isAdmin}
-          canEdit={canEdit}
-          saving={saving}
-          onUpdate={handleUpdateZone}
-          onDelete={handleDeleteZone}
-          onClose={() => setSelectedZone(null)}
-        />
-      )}
+      {/* Bottom section: zone list overview OR selected zone panel */}
+      <div className="bed-editor-bottom">
+        {selectedZone && !drawMode ? (
+          <ZonePanel
+            zone={selectedZone}
+            isAdmin={isAdmin}
+            canEdit={canEdit}
+            saving={saving}
+            onUpdate={handleUpdateZone}
+            onDelete={handleDeleteZone}
+            onClose={() => setSelectedZone(null)}
+          />
+        ) : !drawMode ? (
+          <ZoneList
+            zones={zones}
+            selectedZone={selectedZone}
+            onSelect={(zone) => {
+              setSelectedZone(zone);
+              setError(null);
+            }}
+          />
+        ) : null}
+      </div>
 
       {saving && <div className="bed-editor-saving">Speichern...</div>}
     </div>
@@ -619,6 +735,56 @@ function ZonePanel({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------
+   ZoneList – mobile-friendly overview of all zones when none is selected
+   ------------------------------------------------------------------------- */
+function ZoneList({
+  zones,
+  selectedZone,
+  onSelect,
+}: {
+  zones: Zone[];
+  selectedZone: Zone | null;
+  onSelect: (zone: Zone) => void;
+}) {
+  if (zones.length === 0) {
+    return (
+      <div className="zone-list-empty">
+        <span className="zone-list-empty-icon">🌱</span>
+        <p>Noch keine Zonen angelegt.</p>
+        <p className="zone-list-empty-hint">
+          Nutze &quot;+ Zone zeichnen&quot; um eine neue Zone zu erstellen.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="zone-list">
+      <h3 className="zone-list-title">Zonen ({zones.length})</h3>
+      <div className="zone-list-items">
+        {zones.map((zone) => (
+          <button
+            key={zone.id}
+            className={`zone-list-item ${
+              selectedZone?.id === zone.id ? "zone-list-item-selected" : ""
+            }`}
+            onClick={() => onSelect(zone)}
+          >
+            <div className="zone-list-item-plant">
+              {zone.plant_type || "Leer"}
+            </div>
+            <div className="zone-list-item-meta">
+              {zone.width_cm} × {zone.height_cm} cm
+              {zone.plant_count ? ` · ${zone.plant_count}×` : ""}
+            </div>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

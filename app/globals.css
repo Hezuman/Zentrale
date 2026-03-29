@@ -894,6 +894,109 @@ a:hover {
   text-align: center;
 }
 
+/* Zoom controls */
+.bed-editor-zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bed-editor-zoom-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  min-width: 3rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Bottom section: zone list or zone panel */
+.bed-editor-bottom {
+  min-height: 0;
+}
+
+/* Zone list overview */
+.zone-list {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+}
+
+.zone-list-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.zone-list-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.zone-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+  text-align: left;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+.zone-list-item:hover {
+  border-color: var(--accent);
+  background: rgba(167, 139, 250, 0.04);
+}
+
+.zone-list-item-selected {
+  border-color: var(--accent);
+  background: rgba(167, 139, 250, 0.08);
+}
+
+.zone-list-item-plant {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.zone-list-item-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.zone-list-empty {
+  text-align: center;
+  padding: 2rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  color: var(--text-muted);
+}
+
+.zone-list-empty-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.zone-list-empty p {
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.zone-list-empty-hint {
+  font-size: 0.75rem;
+  color: var(--text-faint);
+  margin-top: 0.25rem;
+}
+
 /* Hochbeet card link */
 .hochbeet-card-link {
   text-decoration: none;
@@ -954,6 +1057,77 @@ a:hover {
 
   .breadcrumb {
     font-size: 0.75rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Mobile bed editor – stacked layout with bed on top, controls below
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  .bed-editor {
+    gap: 0.75rem;
+  }
+
+  .bed-editor-toolbar {
+    gap: 0.5rem;
+  }
+
+  .bed-editor-hint {
+    font-size: 0.7rem;
+  }
+
+  /* Tighter canvas wrapper on mobile – maximise bed area */
+  .bed-editor-canvas-wrapper {
+    padding: 0.5rem;
+    border-radius: var(--radius);
+    /* Smooth momentum scrolling for panning the bed */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Zone panel: fill width, comfortable touch targets */
+  .zone-panel {
+    padding: 1rem;
+  }
+
+  .zone-panel-info {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .zone-panel-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .zone-panel-actions .btn {
+    flex: 1;
+    min-width: 0;
+    justify-content: center;
+  }
+
+  /* Zone list: compact for mobile */
+  .zone-list {
+    padding: 1rem;
+  }
+
+  .zone-list-item {
+    padding: 0.65rem 0.75rem;
+  }
+
+  /* Touch-friendly button sizes */
+  .bed-editor-toolbar .btn {
+    min-height: 2.5rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .bed-editor-zoom-controls .btn {
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
