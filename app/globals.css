@@ -623,8 +623,295 @@ a:hover {
 }
 
 /* ==========================================================================
-   Guest Notice
+   Form Select
    ========================================================================== */
+
+.form-select {
+  padding: 0.65rem 0.85rem;
+  font-size: 0.9rem;
+  font-family: inherit;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s ease;
+  appearance: none;
+  cursor: pointer;
+}
+
+.form-select:focus {
+  border-color: var(--accent);
+}
+
+/* ==========================================================================
+   Counter Input
+   ========================================================================== */
+
+.counter-input {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  width: fit-content;
+}
+
+.counter-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  background: var(--surface);
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.15s ease;
+}
+
+.counter-btn:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+
+.counter-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.counter-value {
+  width: 3rem;
+  text-align: center;
+  border: none;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.85rem;
+  padding: 0.4rem 0;
+  -moz-appearance: textfield;
+}
+
+.counter-value::-webkit-inner-spin-button,
+.counter-value::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* ==========================================================================
+   Bed Editor
+   ========================================================================== */
+
+.bed-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.bed-editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.bed-editor-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.bed-editor-canvas-wrapper {
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+  padding: 1.5rem;
+}
+
+.bed-editor-canvas {
+  position: relative;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  user-select: none;
+  overflow: hidden;
+}
+
+.bed-editor-canvas-draw {
+  cursor: crosshair;
+}
+
+.bed-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+/* Zone rect */
+.bed-zone {
+  position: absolute;
+  border: 1.5px solid rgba(167, 139, 250, 0.5);
+  background: rgba(167, 139, 250, 0.08);
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  transition: border-color 0.15s ease, background 0.15s ease;
+  overflow: hidden;
+}
+
+.bed-zone:hover {
+  border-color: var(--accent);
+  background: rgba(167, 139, 250, 0.14);
+}
+
+.bed-zone-selected {
+  border-color: var(--accent);
+  background: rgba(167, 139, 250, 0.18);
+  box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.3);
+}
+
+.bed-zone-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--text);
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 90%;
+}
+
+.bed-zone-plant {
+  color: var(--accent);
+}
+
+.bed-zone-count {
+  color: var(--text-muted);
+  font-size: 0.65rem;
+}
+
+.bed-zone-empty-label {
+  color: var(--text-faint);
+  font-size: 0.65rem;
+  font-style: italic;
+}
+
+.bed-zone-dims {
+  font-size: 0.55rem;
+  color: var(--text-faint);
+  pointer-events: none;
+}
+
+/* Drawing preview */
+.bed-zone-preview {
+  position: absolute;
+  border: 2px dashed;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.bed-zone-preview-valid {
+  border-color: var(--success);
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.bed-zone-preview-invalid {
+  border-color: var(--error);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.bed-zone-preview-dims {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+/* Zone panel */
+.zone-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+}
+
+.zone-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.zone-panel-header h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.zone-panel-info {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.zone-panel-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.zone-panel-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn-danger {
+  background: transparent;
+  color: var(--error);
+  border-color: var(--error);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: var(--error-bg);
+}
+
+.bed-editor-saving {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* Hochbeet card link */
+.hochbeet-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  transition: border-color 0.15s ease;
+}
+
+.hochbeet-card-link:hover {
+  border-color: var(--accent);
+  color: inherit;
+}
 
 .guest-notice {
   text-align: center;

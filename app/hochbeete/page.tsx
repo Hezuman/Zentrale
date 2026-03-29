@@ -77,7 +77,11 @@ export default async function HochbeetePage() {
         ) : (
           <div className="hochbeete-grid">
             {beds.map((bed: any) => (
-              <div key={bed.id} className="hochbeet-card">
+              <Link
+                key={bed.id}
+                href={`/hochbeete/${bed.id}`}
+                className="hochbeet-card-link"
+              >
                 <div className="hochbeet-card-header">
                   <h3>{bed.name}</h3>
                 </div>
@@ -87,7 +91,7 @@ export default async function HochbeetePage() {
                 {bed.description && (
                   <p className="hochbeet-card-description">{bed.description}</p>
                 )}
-              </div>
+              </Link>
             ))}
           </div>
         )}
