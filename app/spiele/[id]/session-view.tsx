@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   joinGameSession,
@@ -50,6 +50,18 @@ export function SessionView({
 
   const topScorer =
     sortedParticipants.length > 0 ? sortedParticipants[0] : null;
+
+  const isFull =
+    session.max_players != null && participants.length >= session.max_players;
+
+  // Poll for session updates while in lobby (new participants, status changes)
+  useEffect(() => {
+    if (status !== "lobby") return;
+    const interval = setInterval(() => {
+      router.refresh();
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [status, router]);
 
   async function handleAction(action: () => Promise<{ error: string | null }>) {
     setLoading(true);
@@ -159,7 +171,7 @@ export function SessionView({
 
         {/* Lobby actions */}
         <div className="session-actions">
-          {!isParticipant && (
+          {!isParticipant && !isFull && (
             <button
               className="btn btn-primary"
               onClick={() => handleAction(() => joinGameSession(session.id))}
@@ -167,6 +179,9 @@ export function SessionView({
             >
               {loading ? "…" : "Beitreten"}
             </button>
+          )}
+          {!isParticipant && isFull && (
+            <span className="session-full-badge">Session ist voll</span>
           )}
           {isPlayerOnly && (
             <button

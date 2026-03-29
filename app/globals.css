@@ -2122,6 +2122,18 @@ a:hover {
   padding: 0.5rem;
 }
 
+.session-full-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
 .session-cancelled-banner {
   padding: 1rem 1.25rem;
   background: var(--error-bg);

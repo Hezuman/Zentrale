@@ -374,6 +374,17 @@ export async function startGameSession(sessionId: string) {
     }
   }
 
+  // Ensure minimum 2 active participants
+  const { count: participantCount } = await supabase
+    .from("session_participants")
+    .select("id", { count: "exact", head: true })
+    .eq("session_id", sessionId)
+    .eq("is_active", true);
+
+  if (!participantCount || participantCount < 2) {
+    return { error: "Mindestens 2 Spieler werden benötigt, um das Spiel zu starten." };
+  }
+
   const { error } = await supabase
     .from("game_sessions")
     .update({ status: "running", started_at: new Date().toISOString() })
