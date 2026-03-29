@@ -230,6 +230,68 @@ export async function joinGameSession(sessionId: string) {
   return { error: null };
 }
 
+export async function leaveGameSession(sessionId: string) {
+  const supabase = createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Nicht authentifiziert." };
+  }
+
+  // Check session is in lobby
+  const { data: session } = await supabase
+    .from("game_sessions")
+    .select("id, status, mentos_stake")
+    .eq("id", sessionId)
+    .single();
+
+  if (!session) {
+    return { error: "Session nicht gefunden." };
+  }
+
+  if (session.status !== "lobby") {
+    return { error: "Du kannst nur in der Lobby die Session verlassen." };
+  }
+
+  // Check that user is a participant but NOT the host
+  const { data: participant } = await supabase
+    .from("session_participants")
+    .select("id, role")
+    .eq("session_id", sessionId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (!participant) {
+    return { error: "Du bist nicht in dieser Session." };
+  }
+
+  if (participant.role === "host") {
+    return { error: "Der Host kann die Session nicht verlassen. Breche die Session ab." };
+  }
+
+  const { error } = await supabase
+    .from("session_participants")
+    .delete()
+    .eq("id", participant.id);
+
+  if (error) {
+    console.error("Error leaving session:", error);
+    return { error: "Verlassen fehlgeschlagen." };
+  }
+
+  // Refund stake if applicable
+  if (session.mentos_stake > 0) {
+    await refundMentosStake(user.id, sessionId, session.mentos_stake);
+  }
+
+  revalidatePath(`/spiele/${sessionId}`);
+  revalidatePath("/spiele");
+  return { error: null };
+}
+
 export async function startGameSession(sessionId: string) {
   const supabase = createClient();
 
