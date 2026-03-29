@@ -25,8 +25,7 @@ export default function GuestPage() {
 
         <div className="guest-notice">
           <p>
-            <Link href="/login">Anmelden</Link> oder{" "}
-            <Link href="/register">Registrieren</Link> für vollen Zugriff.
+            <Link href="/">Anmelden oder Registrieren</Link> für vollen Zugriff.
           </p>
         </div>
       </div>

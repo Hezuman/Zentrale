@@ -20,9 +20,9 @@
   --text: #e8e8e8;
   --text-muted: #777777;
   --text-faint: #555555;
-  --accent: #a78bfa;
-  --accent-hover: #b9a2fb;
-  --accent-muted: rgba(167, 139, 250, 0.15);
+  --accent: #22c55e;
+  --accent-hover: #4ade80;
+  --accent-muted: rgba(34, 197, 94, 0.15);
   --error: #ef4444;
   --error-bg: rgba(239, 68, 68, 0.1);
   --success: #22c55e;
@@ -753,8 +753,8 @@ a:hover {
 /* Zone rect */
 .bed-zone {
   position: absolute;
-  border: 1.5px solid rgba(167, 139, 250, 0.5);
-  background: rgba(167, 139, 250, 0.08);
+  border: 1.5px solid rgba(34, 197, 94, 0.5);
+  background: rgba(34, 197, 94, 0.08);
   border-radius: 4px;
   cursor: pointer;
   display: flex;
@@ -768,13 +768,13 @@ a:hover {
 
 .bed-zone:hover {
   border-color: var(--accent);
-  background: rgba(167, 139, 250, 0.14);
+  background: rgba(34, 197, 94, 0.14);
 }
 
 .bed-zone-selected {
   border-color: var(--accent);
-  background: rgba(167, 139, 250, 0.18);
-  box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.3);
+  background: rgba(34, 197, 94, 0.18);
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3);
 }
 
 .bed-zone-label {
@@ -953,12 +953,12 @@ a:hover {
 
 .zone-list-item:hover {
   border-color: var(--accent);
-  background: rgba(167, 139, 250, 0.04);
+  background: rgba(34, 197, 94, 0.04);
 }
 
 .zone-list-item-selected {
   border-color: var(--accent);
-  background: rgba(167, 139, 250, 0.08);
+  background: rgba(34, 197, 94, 0.08);
 }
 
 .zone-list-item-plant {
@@ -1058,6 +1058,18 @@ a:hover {
   .breadcrumb {
     font-size: 0.75rem;
   }
+
+  .app-header-user {
+    max-width: 80px;
+  }
+
+  .app-header-right {
+    gap: 0.5rem;
+  }
+
+  .auth-card-landing {
+    padding: 1.5rem;
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -1147,7 +1159,7 @@ a:hover {
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.5rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 0.75rem;
 }
 
@@ -1155,6 +1167,7 @@ a:hover {
   display: flex;
   align-items: center;
   gap: 1rem;
+  flex-shrink: 0;
 }
 
 .app-header-logo {
@@ -1179,6 +1192,10 @@ a:hover {
   font-size: 0.85rem;
   font-weight: 500;
   color: var(--text);
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .app-header-accent {
@@ -1258,7 +1275,7 @@ a:hover {
 }
 
 .dashboard-tile[data-accent="spiele"]:hover {
-  border-color: #a855f7;
+  border-color: #3b82f6;
 }
 
 .dashboard-tile[data-accent="settings"]:hover {
@@ -1563,7 +1580,7 @@ a:hover {
 }
 
 .spiele-type-card:hover {
-  border-color: #a855f7;
+  border-color: var(--accent);
   background: var(--surface-hover);
   color: inherit;
 }
@@ -1573,9 +1590,9 @@ a:hover {
 }
 
 .spiele-type-selected {
-  border-color: #a855f7;
-  background: rgba(168, 85, 247, 0.08);
-  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.25);
+  border-color: var(--accent);
+  background: var(--accent-muted);
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25);
 }
 
 .spiele-type-icon {
@@ -1615,7 +1632,7 @@ a:hover {
 }
 
 .spiele-session-card:hover {
-  border-color: #a855f7;
+  border-color: var(--accent);
   color: inherit;
 }
 
@@ -1678,8 +1695,8 @@ a:hover {
   padding: 0.15rem 0.5rem;
   border-radius: 999px;
   color: var(--accent);
-  border: 1px solid rgba(167, 139, 250, 0.4);
-  background: rgba(167, 139, 250, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  background: rgba(34, 197, 94, 0.1);
   margin-top: 0.25rem;
 }
 
@@ -1953,4 +1970,112 @@ a:hover {
 
 .verlauf-item-winner {
   font-size: 1rem;
+}
+
+/* ==========================================================================
+   Loading Spinner
+   ========================================================================== */
+
+.spinner {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ==========================================================================
+   Auth Card – Landing Page Variant
+   ========================================================================== */
+
+.auth-card-landing {
+  max-width: 440px;
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  margin-top: 1.5rem;
+  text-align: left;
+}
+
+/* ==========================================================================
+   Auth Tabs
+   ========================================================================== */
+
+.auth-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.auth-tab {
+  flex: 1;
+  padding: 0.6rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  font-family: inherit;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.auth-tab:hover {
+  color: var(--text);
+  background: var(--surface-hover);
+}
+
+.auth-tab-active {
+  color: var(--text);
+  background: var(--bg);
+}
+
+/* ==========================================================================
+   Register Steps
+   ========================================================================== */
+
+.register-step-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  margin-bottom: 0.25rem;
+}
+
+.register-step-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* ==========================================================================
+   Dashboard Tile Loading
+   ========================================================================== */
+
+.dashboard-tile-loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.dashboard-tile-loading .dashboard-tile-icon {
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }

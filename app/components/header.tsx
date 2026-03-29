@@ -8,7 +8,7 @@ import { ROLE_LABELS } from "@/lib/roles";
 const AREA_COLORS: Record<string, string> = {
   dashboard: "#22c55e",
   hochbeete: "#a0845c",
-  spiele: "#a855f7",
+  spiele: "#3b82f6",
   settings: "#6b7280",
   admin: "#eab308",
   guest: "#22c55e",

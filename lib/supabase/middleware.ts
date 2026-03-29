@@ -44,9 +44,9 @@ export async function updateSession(request: NextRequest) {
 
   // Redirect authenticated users away from auth pages and guest page
   const authPaths = ["/login", "/register", "/guest"];
-  const isAuthPage = authPaths.some((path) =>
-    request.nextUrl.pathname.startsWith(path)
-  );
+  const isAuthPage =
+    authPaths.some((path) => request.nextUrl.pathname.startsWith(path)) ||
+    request.nextUrl.pathname === "/";
 
   if (isAuthPage && user) {
     const url = request.nextUrl.clone();

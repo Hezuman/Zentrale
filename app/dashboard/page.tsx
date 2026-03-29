@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { AppHeader } from "@/app/components/header";
+import { DashboardTile } from "@/app/components/dashboard-tile";
 import { ROLE_LABELS, canAccessSpiele, canAccessSettings, canAccessAdmin } from "@/lib/roles";
 
 export default async function DashboardPage() {
@@ -38,34 +38,18 @@ export default async function DashboardPage() {
         </div>
 
         <div className="dashboard-tiles">
-          <Link href="/hochbeete" className="dashboard-tile" data-accent="hochbeete">
-            <div className="dashboard-tile-icon">🌱</div>
-            <h3>Hochbeete</h3>
-            <p>Hochbeete verwalten und überwachen.</p>
-          </Link>
+          <DashboardTile href="/hochbeete" accent="hochbeete" icon="🌱" title="Hochbeete" description="Hochbeete verwalten und überwachen." />
 
           {canAccessSpiele(profile.role) && (
-            <Link href="/spiele" className="dashboard-tile" data-accent="spiele">
-              <div className="dashboard-tile-icon">🎮</div>
-              <h3>Spiele</h3>
-              <p>Spiele und Unterhaltung.</p>
-            </Link>
+            <DashboardTile href="/spiele" accent="spiele" icon="🎮" title="Spiele" description="Spiele und Unterhaltung." />
           )}
 
           {canAccessSettings(profile.role) && (
-            <Link href="/settings" className="dashboard-tile" data-accent="settings">
-              <div className="dashboard-tile-icon">⚙️</div>
-              <h3>Einstellungen</h3>
-              <p>Konto und Einstellungen.</p>
-            </Link>
+            <DashboardTile href="/settings" accent="settings" icon="⚙️" title="Einstellungen" description="Konto und Einstellungen." />
           )}
 
           {canAccessAdmin(profile.role) && (
-            <Link href="/admin" className="dashboard-tile" data-accent="admin">
-              <div className="dashboard-tile-icon">🛡️</div>
-              <h3>Admin</h3>
-              <p>Verwaltungsbereich.</p>
-            </Link>
+            <DashboardTile href="/admin" accent="admin" icon="🛡️" title="Admin" description="Verwaltungsbereich." />
           )}
         </div>
       </div>
