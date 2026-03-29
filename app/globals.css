@@ -1281,3 +1281,502 @@ a:hover {
   color: var(--success) !important;
   border-color: var(--success) !important;
 }
+
+/* ==========================================================================
+   Spiele / Gaming
+   ========================================================================== */
+
+.spiele-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.spiele-header h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.25rem;
+}
+
+.spiele-header p {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* Stats bar */
+.spiele-stats-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.75rem;
+}
+
+.spiele-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.75rem 0.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.spiele-stat-icon {
+  font-size: 1.25rem;
+}
+
+.spiele-stat-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.spiele-stat-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Sections */
+.spiele-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.spiele-section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.spiele-empty {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  padding: 1rem;
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+/* Game type cards */
+.spiele-type-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+.spiele-type-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s ease, background 0.15s ease;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.spiele-type-card:hover {
+  border-color: #a855f7;
+  background: var(--surface-hover);
+  color: inherit;
+}
+
+.spiele-type-selectable {
+  /* button reset inherits from .spiele-type-card */
+}
+
+.spiele-type-selected {
+  border-color: #a855f7;
+  background: rgba(168, 85, 247, 0.08);
+  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.25);
+}
+
+.spiele-type-icon {
+  font-size: 1.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.spiele-type-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.spiele-type-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* Session cards */
+.spiele-session-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0.75rem;
+}
+
+.spiele-session-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s ease;
+}
+
+.spiele-session-card:hover {
+  border-color: #a855f7;
+  color: inherit;
+}
+
+.spiele-session-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.spiele-session-type-icon {
+  font-size: 1.25rem;
+}
+
+.spiele-session-status {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.5rem;
+  border: 1px solid;
+  border-radius: 999px;
+}
+
+.session-status-lg {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.75rem;
+}
+
+.spiele-session-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.spiele-session-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.spiele-session-stake {
+  font-size: 0.8rem;
+  color: #eab308;
+  font-weight: 500;
+}
+
+.spiele-session-target {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.spiele-session-badge-joined {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  color: var(--accent);
+  border: 1px solid rgba(167, 139, 250, 0.4);
+  background: rgba(167, 139, 250, 0.1);
+  margin-top: 0.25rem;
+}
+
+/* Create game form */
+.create-game-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.create-game-config {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+}
+
+.form-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+
+/* Session detail view */
+.session-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.session-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.session-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.session-type-icon {
+  font-size: 2rem;
+}
+
+.session-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.session-type-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.session-info-row {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.session-info-item {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.session-winner-banner {
+  padding: 1rem 1.25rem;
+  background: rgba(234, 179, 8, 0.08);
+  border: 1px solid rgba(234, 179, 8, 0.3);
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #eab308;
+}
+
+.session-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* Player list / scoreboard */
+.session-participants {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.session-player-list {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.session-player-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.session-player-row:last-child {
+  border-bottom: none;
+}
+
+.session-player-rank {
+  width: 2rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.session-player-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.session-player-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.session-player-host-badge {
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.1rem 0.35rem;
+  border-radius: 999px;
+  color: #eab308;
+  border: 1px solid rgba(234, 179, 8, 0.4);
+  background: rgba(234, 179, 8, 0.1);
+}
+
+.session-player-multiplier {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--accent);
+}
+
+.session-player-score {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  min-width: 3rem;
+  text-align: right;
+}
+
+.session-player-controls {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.form-select-sm {
+  padding: 0.3rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+/* Verlauf / History */
+.verlauf-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.75rem;
+}
+
+.verlauf-stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 1rem 0.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.verlauf-stat-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.verlauf-stat-positive {
+  color: var(--success);
+}
+
+.verlauf-stat-negative {
+  color: var(--error);
+}
+
+.verlauf-stat-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.verlauf-list {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.verlauf-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s ease;
+}
+
+.verlauf-item:last-child {
+  border-bottom: none;
+}
+
+.verlauf-item:hover {
+  background: var(--surface-hover);
+  color: inherit;
+}
+
+.verlauf-item-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.verlauf-item-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.verlauf-item-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.verlauf-item-date {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.verlauf-item-score {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.verlauf-item-winner {
+  font-size: 1rem;
+}

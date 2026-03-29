@@ -41,3 +41,11 @@ export function canAccessAdmin(role: string | null | undefined): boolean {
 export function canEditContent(role: string | null | undefined): boolean {
   return isAccountRole(role);
 }
+
+export function canCreateGameSession(role: string | null | undefined): boolean {
+  return isAccountRole(role);
+}
+
+export function canManageGameSession(role: string | null | undefined): boolean {
+  return isAccountRole(role);
+}
